@@ -16,10 +16,10 @@ import pandas as pd
 
 dirHome = "C:\\Users\\mtadesse\\Hazen and Sawyer\\MIKE_Modeling_Group - Documents\\"\
         "ECFTX\\extractedWellData\\011-allECFTXPermits-county-useclass\\analysis\\"\
-                        "concat_refinedWells\\wellsByWatrshd"
+                        "concat_refinedWells\\wells_ag_lra_ByWatrshd"
 dirOut = "C:\\Users\\mtadesse\\Hazen and Sawyer\\MIKE_Modeling_Group - Documents\\"\
         "ECFTX\\extractedWellData\\011-allECFTXPermits-county-useclass\\analysis\\"\
-                        "concat_refinedWells\\allUseClassWells4Dfs0"
+                        "concat_refinedWells\\ag_lra_UseClassWells4Dfs0"
 
 
 os.chdir(dirHome)
@@ -38,6 +38,12 @@ for ws in wsList:
     dat['date'] = pd.to_datetime(dat['date'])
 
     print(dat[['date', 'id', 'withdrawal']])
+    
+    #################################################
+    # convert cubic feet/day to gallon/day
+    # withdrawal is in cfd; 1 cf = 7.48052 gallon
+    dat['withdrawal_gal'] = dat['withdrawal']*7.48052
+    #################################################
 
     rcpUnique = dat['id'].unique()
     # print(rcpUnique)
@@ -48,7 +54,7 @@ for ws in wsList:
 
     for rcp in rcpUnique:
         df = dat[dat['id'] == rcp]
-        newDf = df[['date', 'withdrawal']]
+        newDf = df[['date', 'withdrawal_gal']] # take the gallon/day data
         newDf.columns = ['date', rcp]
         # print(newDf)
 
