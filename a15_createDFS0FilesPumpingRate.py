@@ -1,6 +1,7 @@
 """  
 Created on Thu Sep 23 16:13:00 2021
 modified on Wed Oct 06 18:03:00 2021
+modified on mon nov 01 14:13:00 2021
 
 prepare dfs0 withdrawal files with the 
 units, types and datatypes included - but for pumping rate
@@ -17,13 +18,13 @@ from mikeio.eum import ItemInfo, EUMType, EUMUnit
 import pandas as pd 
 from mikeio import Dfs0
 
-dirHome = "C:\\Users\\mtadesse\\Hazen and Sawyer\\"\
-    "MIKE_Modeling_Group - Documents\\ECFTX\\"\
-            "extractedWellData\\07-staticFile\\wellsByWS4Dfs0"
+dirHome = "C:\\Users\\mtadesse\\Hazen and Sawyer\\MIKE_Modeling_Group - Documents\\"\
+        "ECFTX\\extractedWellData\\011-allECFTXPermits-county-useclass\\"\
+                "analysis\\concat_refinedWells\\allUseClassWells4Dfs0"
 
-dirOut = "C:\\Users\\mtadesse\\Hazen and Sawyer\\"\
-    "MIKE_Modeling_Group - Documents\\ECFTX\\"\
-            "extractedWellData\\07-staticFile\\wellsByWS4Dfs0_pumpingRate"
+dirOut = "C:\\Users\\mtadesse\\Hazen and Sawyer\\MIKE_Modeling_Group - Documents\\"\
+        "ECFTX\\extractedWellData\\011-allECFTXPermits-county-useclass\\"\
+                "analysis\\concat_refinedWells\\Dfs0_allUseClass"
 
 
 os.chdir(dirHome)
@@ -38,13 +39,18 @@ for ws in wsList:
     print(ws)
 
     dat = pd.read_csv(ws)
+    
+    """ skip watershed if there are no wells inside """
+    if len(dat) == 0:
+        continue
+    
     dat.drop('Unnamed: 0', axis = 1, inplace = True)
     
     print(dat)
 
     # organize the columns by changing them to arrays
     # but based on columns 
-    # for the withdrawals - for now use "water volume"
+    # for the withdrawals - for now use "pumping rate"
 
     df = []
     items = []
@@ -56,16 +62,16 @@ for ws in wsList:
         ###########################################################
 
         items.append(ItemInfo(dat.columns[ii], EUMType.Pumping_Rate, 
-                                EUMUnit.feet_pow_3_per_day, 
+                                EUMUnit.gallon_per_day, 
                                     data_value_type= DataValueType.MeanStepBackward))
 
-    # generate monthly time from 12/2003 to 12/2014
+    # generate monthly time from 12/2003 to 12/2014 - MS: month start freq
     datTime = pd.date_range(start='12/1/2003', end='12/31/2014', freq='MS')    
 
     '''  
     # writing dataframe to dfs0
     # use pumping rate for withdrawal
-    # use meanstepBackward for mean step accumulated
+    # use meanstepBackward which is same as mean step accumulated
 
     '''
     ds = Dataset(data = df, time = datTime, items = items)
@@ -80,4 +86,4 @@ for ws in wsList:
 
     dfs.write(filename= ws.split(".csv")[0] + ".dfs0", 
             data=ds,
-            title="monthly_withdrawal_volume_mg")
+            title="Pumping Rate")
